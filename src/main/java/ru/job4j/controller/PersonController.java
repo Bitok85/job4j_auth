@@ -4,11 +4,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.domain.Person;
 import ru.job4j.service.PersonService;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -42,15 +42,20 @@ public class PersonController {
 
     @PutMapping("/")
     public ResponseEntity<Void> update(@RequestBody Person person) {
-        this.personService.save(person);
+        Optional<Person> personRsl = personService.update(person);
+        if (personRsl.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No person found for update");
+        }
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable int id) {
-        Person person = new Person();
-        person.setId(id);
-        this.personService.delete(person);
+        Optional<Person> person = personService.findById(id);
+        if (person.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No persons with this id");
+        }
+        personService.delete(person.get());
         return ResponseEntity.ok().build();
     }
 }

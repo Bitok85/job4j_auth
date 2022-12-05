@@ -29,4 +29,12 @@ public class PersonService {
     public Optional<Person> findById(int id) {
         return store.findById(id);
     }
+
+    public Optional<Person> update(Person personUpd) {
+        Optional<Person> person = findById(personUpd.getId());
+        if (person.isPresent()) {
+            person = Optional.of(save(personUpd));
+        }
+        return person;
+    }
 }
