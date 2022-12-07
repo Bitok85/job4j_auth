@@ -3,6 +3,7 @@ package ru.job4j.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.domain.Person;
@@ -12,13 +13,14 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/person")
+@RequestMapping("/persons")
 @AllArgsConstructor
 public class PersonController {
 
     private final PersonService personService;
+    private BCryptPasswordEncoder encoder;
 
-    @GetMapping("/")
+    @GetMapping("/all")
     public List<Person> findAll() {
         return personService.findAll();
     }
@@ -29,14 +31,6 @@ public class PersonController {
         return new ResponseEntity<Person>(
                 person.orElse(new Person()),
                 person.isPresent() ? HttpStatus.OK : HttpStatus.NOT_FOUND
-        );
-    }
-
-    @PostMapping("/")
-    public ResponseEntity<Person> create(@RequestBody Person person) {
-        return new ResponseEntity<Person>(
-                this.personService.save(person),
-                HttpStatus.CREATED
         );
     }
 
@@ -58,4 +52,12 @@ public class PersonController {
         personService.delete(person.get());
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/sign-up")
+    public ResponseEntity<Boolean> signUp(@RequestBody Person person) {
+        person.setPassword(encoder.encode(person.getPassword()));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(personService.save(person).isPresent());
+    }
+
 }

@@ -14,8 +14,8 @@ public class PersonService {
 
     private final PersonRepository store;
 
-    public Person save(Person person) {
-        return store.save(person);
+    public Optional<Person> save(Person person) {
+        return Optional.of(store.save(person));
     }
 
     public void delete(Person person) {
@@ -33,8 +33,11 @@ public class PersonService {
     public Optional<Person> update(Person personUpd) {
         Optional<Person> person = findById(personUpd.getId());
         if (person.isPresent()) {
-            person = Optional.of(save(personUpd));
+            person = save(personUpd);
         }
         return person;
+    }
+    public Optional<Person> findByLogin(String login) {
+        return store.findByLogin(login);
     }
 }
