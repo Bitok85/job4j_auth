@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.domain.Person;
+import ru.job4j.domain.PersonDTO;
 import ru.job4j.service.PersonService;
 import ru.job4j.util.PasswordValidator;
 
@@ -78,12 +79,22 @@ public class PersonController {
                 .body(personService.save(person).isPresent());
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<Person> patch(@PathVariable int id, @RequestBody PersonDTO personDTO) {
+        Person person = personService.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No persons with this id"));
+        person.setLogin(personDTO.getLogin());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(person);
+
+    }
+
     @ExceptionHandler(value = { IllegalArgumentException.class })
     public void exceptionHandler(Exception e, HttpServletResponse res) throws IOException {
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setContentType("application/json");
         res.getWriter().write(objectMapper.writeValueAsString(new HashMap<>() { {
-            put("message", "Password doesn't match pattern");
+            put("message", PasswordValidator.invalidMsg());
             put("type", e.getClass());
         }}));
         LOG.error(e.getMessage());
