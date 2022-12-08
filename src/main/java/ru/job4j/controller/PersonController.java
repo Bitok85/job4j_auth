@@ -7,6 +7,7 @@ import org.postgresql.util.PSQLException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.domain.Person;
@@ -16,6 +17,7 @@ import ru.job4j.util.PasswordValidator;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +49,8 @@ public class PersonController {
     }
 
     @PutMapping("/")
-    public ResponseEntity<Void> update(@RequestBody Person person) {
+    @Validated
+    public ResponseEntity<Void> update(@Valid @RequestBody Person person) {
         Optional<Person> personRsl = personService.update(person);
         if (personRsl.isEmpty()) {
             LOG.error("No person found for update");
@@ -68,7 +71,8 @@ public class PersonController {
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<Boolean> signUp(@RequestBody Person person) {
+    @Validated
+    public ResponseEntity<Boolean> signUp(@Valid @RequestBody Person person) {
         String password = person.getPassword();
         if (!PasswordValidator.validate(password)) {
             LOG.error(PasswordValidator.invalidMsg());
@@ -80,7 +84,8 @@ public class PersonController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Person> patch(@PathVariable int id, @RequestBody PersonDTO personDTO) {
+    @Validated
+    public ResponseEntity<Person> patch(@PathVariable int id, @Valid @RequestBody PersonDTO personDTO) {
         Person person = personService.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No persons with this id"));
         person.setLogin(personDTO.getLogin());
